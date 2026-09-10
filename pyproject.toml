@@ -1,0 +1,50 @@
+[project]
+name = "pediatric-counting"
+version = "0.1.0"
+description = "Explainable single-room pediatric counting research harness"
+readme = "README.md"
+requires-python = ">=3.11,<3.13"
+
+dependencies = [
+    # Core vision
+    "ultralytics>=8.2.0",
+    "supervision>=0.22.0",
+    "opencv-python>=4.9.0",
+    # Numerics
+    "numpy>=1.26.0,<2.0",
+    "scipy>=1.12.0",
+    "pandas>=2.2.0",
+    "pyarrow>=15.0.0",
+    # Config / validation
+    "pyyaml>=6.0",
+    "pydantic>=2.7.0",
+    # CLI & UX
+    "click>=8.1.7",
+    "rich>=13.7.0",
+    "tqdm>=4.66.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=4.1.0",
+    "ruff>=0.4.0",
+]
+
+[project.scripts]
+pediatric-counter = "pediatric_counter.app.cli:cli_entrypoint"
+
+[tool.setuptools.packages.find]
+include = ["pediatric_counter*"]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"

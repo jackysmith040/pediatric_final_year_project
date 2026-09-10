@@ -1,0 +1,50 @@
+room:
+  id: hospital_otmc_opd
+  video_path: assets/cctv_videos/Hospital OTMC GF OPD_Hospital_Hospital_20260616055958_20260616080702_117596445 - Copy.mp4
+  fps: auto
+  timezone: UTC+8
+  start_frame: 0
+  max_frames: 150                               # default test slice for rapid iteration
+  demographic_prior: adult_dominant            # adult-dominant OPD environment ($H_0 = Adult$)
+
+models:
+  detector_path: computer_vision_models/yolo26/onnx/yolo26s.onnx                     # Stage 1: Fast AVX2 Full-frame CCTV Person Detector
+  classifier_path: computer_vision_models/yolo26/onnx/onnx_fine_tuned/pediatric-model.onnx # Stage 2: Fine-Tuned Person Crop Demographic Classifier
+  detector_class_ids: [0]                       # 0 = person (COCO)
+  classifier_classes: [child, adult]
+
+crop:
+  margin_fraction: 0.10                         # C_m(b) expansion
+  resize_mode: letterbox                        # 'letterbox' | 'direct'
+  input_size: 224
+  padding_value: 114
+  save_debug_crops: false
+
+tracking:
+  backend: bytetrack
+  tracker_config: assets/trackers/bytetrack.yaml
+  new_track_threshold: 0.18
+  track_high_threshold: 0.25
+  track_low_threshold: 0.15
+  match_threshold: 0.80
+  max_lost_time_seconds: 30                     # compared at 5 / 15 / 30 in ablation
+
+lifecycle:
+  min_confirmed_observations: 5
+  confirmation_window_frames: 15
+  min_child_probability: 0.60
+  label_window_size: 10
+  uncertain_margin: 0.05
+
+counting:
+  mode: distinct_children_over_interval
+  count_only_confirmed: true
+  count_each_track_id_once: true
+  retain_lost_ids: true
+
+artifacts:
+  output_dir: runs/otmc_opd_baseline
+  save_annotated_video: true
+  save_debug_crops: false
+  save_per_frame_csv: true
+  save_summary_json: true

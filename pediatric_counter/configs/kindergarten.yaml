@@ -1,0 +1,76 @@
+room:
+  id: kindergarten_classroom
+  video_path: assets/cctv_videos/cctv_kindergarten_classroom.mp4
+  fps: auto
+  timezone: UTC
+  start_frame: 0
+  max_frames: 400
+  demographic_prior: child_dominant             # child-dominant classroom environment ($H_0 = Child$)
+
+models:
+  detector_path: computer_vision_models/yolo26/base_model/yolo26s.pt               # Stage 1: YOLO26s CCTV Person Detector
+  classifier_path: computer_vision_models/yolo26/fine_tune_model/pediatric-model.pt # Stage 2: YOLO26 Crop Demographic Classifier
+  detector_class_ids: [0]                       # 0 = person
+  classifier_classes: [child, adult]
+
+crop:
+  margin_fraction: 0.10                         # C_m(b) expansion
+  resize_mode: letterbox                        # 'letterbox' | 'direct'
+  input_size: 224
+  padding_value: 114
+  save_debug_crops: false
+
+tracking:
+  backend: bytetrack
+  tracker_config: assets/trackers/bytetrack.yaml
+  new_track_threshold: 0.25
+  track_high_threshold: 0.30
+  track_low_threshold: 0.15
+  match_threshold: 0.80
+  max_lost_time_seconds: 30
+
+lifecycle:
+  min_confirmed_observations: 15
+  confirmation_window_frames: 25
+  min_child_probability: 0.60
+  label_window_size: 15
+  uncertain_margin: 0.05
+  enable_stitching: true
+
+counting:
+  mode: distinct_children_over_interval
+  count_only_confirmed: true
+  count_each_track_id_once: true
+  retain_lost_ids: true
+  count_adults: true
+  count_children: true
+
+artifacts:
+  output_dir: runs/kindergarten_classroom
+  save_annotated_video: true
+  save_debug_crops: false
+  save_per_frame_csv: true
+  save_summary_json: true
+  live_view: false
+  live_view_scale: 1.0
+  playback_speed: 1.0
+
+plugins:
+  clahe:
+    enabled: false
+    clip_limit: 2.0
+    tile_grid_size: [8, 8]
+  sahi:
+    enabled: false
+    slice_height: 512
+    slice_width: 512
+    overlap_height_ratio: 0.20
+    overlap_width_ratio: 0.20
+  kids_sieve:
+    enabled: false
+    model_path: computer_vision_models/yolo26/onnx/onnx_fine_tuned/pediatric-kids-only.onnx
+    confidence_threshold: 0.25
+  model_shadow:
+    enabled: false
+    model_path: computer_vision_models/yolo26/onnx/onnx_fine_tuned/pediatric-smaller-dataset-trained.onnx
+    confidence_threshold: 0.20

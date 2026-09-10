@@ -216,3 +216,11 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+ 
+# Large video assets and runs
+*.mp4
+*.avi
+assets/cctv_videos/
+runs/
+kernel.errors.txt
+
